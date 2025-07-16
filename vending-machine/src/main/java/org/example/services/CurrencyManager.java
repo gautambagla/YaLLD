@@ -1,0 +1,80 @@
+package org.example.services;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.NoSuchElementException;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.function.Function;
+import java.util.stream.Collectors;
+import org.example.models.Currency;
+import org.example.util.Locker;
+
+public class CurrencyManager extends Locker<Currency> {
+  private static CurrencyManager _currencyManager;
+
+  public static CurrencyManager getInstance() {
+    if (_currencyManager == null) _currencyManager = new CurrencyManager();
+    return _currencyManager;
+  }
+
+  private final ConcurrentHashMap<Currency, Integer> _inventory;
+  private Long totalAmountAvailable = 0L;
+
+  private CurrencyManager() {
+    super();
+    this._inventory = new ConcurrentHashMap<>();
+    Executors.newScheduledThreadPool(1).schedule(this::autoCleanup, 30L, TimeUnit.SECONDS);
+  }
+
+  private void autoCleanup() {
+    super.cleanup().forEach(this::addCurrencyToInventory);
+  }
+
+  public void addCurrencyToInventory(Currency currency, int quantity) {
+    this._inventory.compute(currency, (k, v) -> (v == null ? 0 : v) + quantity);
+    this.totalAmountAvailable += currency.value() * quantity;
+  }
+
+  public Map<Currency, Integer> getAvailableCash() {
+    return new HashMap<>(this._inventory);
+  }
+
+  @Override
+  public synchronized String lock(Currency currency, Integer quantity)
+      throws NoSuchElementException {
+    int availability = this._inventory.getOrDefault(currency, 0);
+    if (availability < quantity) {
+      throw new NoSuchElementException("Currency " + currency.toString() + " is unavailable");
+    }
+    addCurrencyToInventory(currency, -quantity);
+    return super.lock(currency, quantity);
+  }
+
+  @Override
+  public synchronized Map.Entry<Currency, Integer> rollback(String lockId) {
+    Map.Entry<Currency, Integer> rollbackCurrency = super.rollback(lockId);
+    if (rollbackCurrency == null) return null;
+    addCurrencyToInventory(rollbackCurrency.getKey(), rollbackCurrency.getValue());
+    return rollbackCurrency;
+  }
+
+  public long getTotalAmountAvailable() {
+    return this.totalAmountAvailable;
+  }
+
+  public static Map<Currency, Long> getChangeCurrencyMap(
+      int amount, Map<Currency, Integer> currencyMap) throws RuntimeException {
+    if (amount <= 0) {
+      throw new RuntimeException("Amount should be a positive value");
+    }
+    List<Currency> currencyList = new ArrayList<>();
+    // call combination sum on sorted map to select notes of different type
+    // if sum can't be created throw error
+    return currencyList.stream()
+        .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+  }
+}
