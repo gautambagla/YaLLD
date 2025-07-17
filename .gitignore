@@ -1,5 +1,5 @@
- ### Mac OS ###
- .DS_Store
+### Mac OS ###
+.DS_Store
 
- ### IntelliJ IDEA ###
- .idea/*
+### IntelliJ IDEA ###
+/.idea/*
