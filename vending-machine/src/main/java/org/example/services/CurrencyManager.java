@@ -44,18 +44,29 @@ public class CurrencyManager extends Locker<Currency> {
   }
 
   @Override
-  public synchronized String lock(Currency currency, Integer quantity)
-      throws NoSuchElementException {
-    int availability = this._inventory.getOrDefault(currency, 0);
-    if (availability < quantity) {
-      throw new NoSuchElementException("Currency " + currency.toString() + " is unavailable");
-    }
-    addCurrencyToInventory(currency, -quantity);
-    return super.lock(currency, quantity);
+  public String lock(Currency currency, Integer quantity) throws NoSuchElementException {
+    StringBuilder lockIdBuilder = new StringBuilder();
+
+    // the lambda to compute() is performed atomically, this is to enhance
+    // concurrent performance rather than using synchronizing this function
+    this._inventory.compute(
+        currency,
+        (k, availability) -> {
+          if (availability == null) {
+            throw new RuntimeException("Currency " + currency.toString() + " not found");
+          } else if (availability < quantity) {
+            throw new RuntimeException(
+                "Required quantity of Currency " + currency.toString() + " is unavailable");
+          }
+          lockIdBuilder.append(super.lock(currency, quantity));
+          this.totalAmountAvailable -= currency.value() * quantity;
+          return availability - quantity;
+        });
+    return lockIdBuilder.toString();
   }
 
   @Override
-  public synchronized Map.Entry<Currency, Integer> rollback(String lockId) {
+  public Map.Entry<Currency, Integer> rollback(String lockId) {
     Map.Entry<Currency, Integer> rollbackCurrency = super.rollback(lockId);
     if (rollbackCurrency == null) return null;
     addCurrencyToInventory(rollbackCurrency.getKey(), rollbackCurrency.getValue());
