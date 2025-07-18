@@ -31,7 +31,12 @@
                 <version>2.45.0</version>
                 <configuration>
                     <java>
-                        <googleJavaFormat/>
+                        <googleJavaFormat>
+                            <version>1.25.0</version>
+                            <style>AOSP</style>
+                            <reflowLongStrings>true</reflowLongStrings>
+                            <formatJavadoc>false</formatJavadoc>
+                        </googleJavaFormat>
                     </java>
                 </configuration>
                 <executions>
