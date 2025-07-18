@@ -1,5 +1,6 @@
 package org.example;
 
+import org.example.models.Currency;
 import org.example.models.Item;
 import org.example.models.Order;
 import org.example.services.CurrencyManager;
@@ -9,12 +10,14 @@ import org.example.services.OrderManager;
 public class VendingMachine {
     private final OrderManager _orderManager;
     private final InventoryManager _inventoryManager;
+    private final CurrencyManager _currencyManager;
     private static VendingMachine _vendingMachine;
 
     // Vending Machine is Singleton because inventoryManager, orderManager are singleton
     private VendingMachine() {
         this._orderManager = OrderManager.getInstance();
         this._inventoryManager = InventoryManager.getInstance();
+        this._currencyManager = CurrencyManager.getInstance();
     }
 
     public static VendingMachine getInstance() {
@@ -30,7 +33,7 @@ public class VendingMachine {
 
     public void addItem(Item item, Integer quantity) {
         if (quantity <= 0) {
-            throw new RuntimeException("Quantity should be a positive value");
+            throw new RuntimeException("Item quantity should be a positive value");
         }
         _inventoryManager.addItemToInventory(item, quantity);
     }
@@ -41,10 +44,17 @@ public class VendingMachine {
         return order.orderId();
     }
 
+    public void addCurrency(Currency currency, Integer quantity) {
+        if (quantity <= 0) {
+            throw new RuntimeException("Currency quantity should be a positive value");
+        }
+        _currencyManager.addCurrencyToInventory(currency, quantity);
+    }
+
     // To be called after all threads (users) have completed execution
     public void shutdown() {
         System.out.println("\n\nAttempting to shutdown Vending Machine...");
-        InventoryManager.getInstance().shutdown();
-        CurrencyManager.getInstance().shutdown();
+        this._inventoryManager.shutdown();
+        this._currencyManager.shutdown();
     }
 }

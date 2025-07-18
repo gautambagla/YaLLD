@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
+import org.example.models.Currency;
 import org.example.models.Item;
 
 public class Main {
@@ -18,15 +19,21 @@ public class Main {
         // To check status/manage each thread/user run
         runs = new ArrayList<>();
 
-        // supposedly admin user to add items
+        // supposedly admin user to add items/currency
         runUser(
                 () -> {
                     final ThreadLocal<Integer> user =
                             ThreadLocal.withInitial(randomUser::getAndIncrement);
-                    System.out.printf("\nUser %s is adding items asynchronously", user.get());
+                    System.out.printf("\nUser %s is adding items", user.get());
                     vendingMachine.addItem(new Item("Lays", 20), 5);
                     vendingMachine.addItem(new Item("Bingo", 10), 2);
                     vendingMachine.addItem(new Item("Coke", 40), 3);
+
+                    System.out.printf("\nUser %s is adding currency", user.get());
+                    vendingMachine.addCurrency(Currency.HUNDRED, 50);
+                    vendingMachine.addCurrency(Currency.TEN, 50);
+                    vendingMachine.addCurrency(Currency.FIVE, 50);
+                    vendingMachine.addCurrency(Currency.ONE, 50);
                 });
 
         try {
