@@ -4,6 +4,7 @@ import org.example.models.Currency;
 import org.example.models.Item;
 import org.example.models.Order;
 import org.example.services.CurrencyManager;
+import org.example.services.Dispenser;
 import org.example.services.InventoryManager;
 import org.example.services.OrderManager;
 
@@ -11,13 +12,15 @@ public class VendingMachine {
     private final OrderManager _orderManager;
     private final InventoryManager _inventoryManager;
     private final CurrencyManager _currencyManager;
+    private final Dispenser _dispenser;
     private static VendingMachine _vendingMachine;
 
     // Vending Machine is Singleton because inventoryManager, orderManager are singleton
     private VendingMachine() {
-        this._orderManager = OrderManager.getInstance();
-        this._inventoryManager = InventoryManager.getInstance();
-        this._currencyManager = CurrencyManager.getInstance();
+        this._inventoryManager = new InventoryManager();
+        this._currencyManager = new CurrencyManager();
+        this._dispenser = new Dispenser();
+        this._orderManager = new OrderManager(_inventoryManager, _currencyManager, _dispenser);
     }
 
     public static VendingMachine getInstance() {

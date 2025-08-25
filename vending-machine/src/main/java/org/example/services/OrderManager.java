@@ -8,21 +8,19 @@ import org.example.models.Order;
 import org.example.util.Locker;
 
 public class OrderManager {
-    private OrderManager() {
-        this._inventoryManager = InventoryManager.getInstance();
-        this._currencyManager = CurrencyManager.getInstance();
-        this._dispenser = Dispenser.getInstance();
+    public OrderManager(
+            InventoryManager inventoryManager,
+            CurrencyManager currencyManager,
+            Dispenser dispenser) {
+        this._inventoryManager = inventoryManager;
+        this._currencyManager = currencyManager;
+        this._dispenser = dispenser;
     }
 
     private static OrderManager _orderManager;
     private final InventoryManager _inventoryManager;
     private final CurrencyManager _currencyManager;
     private final Dispenser _dispenser;
-
-    public static OrderManager getInstance() {
-        if (_orderManager == null) _orderManager = new OrderManager();
-        return _orderManager;
-    }
 
     // This method need not by synchronized as it acts as an orchestrator to 2PC
     // This also ensures if multiple users are placing orders concurrently, the orders

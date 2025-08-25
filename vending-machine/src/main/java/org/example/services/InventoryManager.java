@@ -11,18 +11,10 @@ import org.example.models.Item;
 import org.example.util.Locker;
 
 public class InventoryManager extends Locker<Item> {
-
-    private static InventoryManager _inventoryManager;
-
-    public static InventoryManager getInstance() {
-        if (_inventoryManager == null) _inventoryManager = new InventoryManager();
-        return _inventoryManager;
-    }
-
     private final ConcurrentHashMap<Item, Integer> _inventory;
     private final ScheduledExecutorService _cleanupScheduler;
 
-    private InventoryManager() {
+    public InventoryManager() {
         super();
         this._inventory = new ConcurrentHashMap<>();
 

@@ -16,18 +16,11 @@ import org.example.models.Currency;
 import org.example.util.Locker;
 
 public class CurrencyManager extends Locker<Currency> {
-    private static CurrencyManager _currencyManager;
-
-    public static CurrencyManager getInstance() {
-        if (_currencyManager == null) _currencyManager = new CurrencyManager();
-        return _currencyManager;
-    }
-
     private final ConcurrentHashMap<Currency, Integer> _inventory;
     private final ScheduledExecutorService _cleanupScheduler;
     private final AtomicLong totalAmountAvailable;
 
-    private CurrencyManager() {
+    public CurrencyManager() {
         super();
         this._inventory = new ConcurrentHashMap<>();
         this.totalAmountAvailable = new AtomicLong(0L);
